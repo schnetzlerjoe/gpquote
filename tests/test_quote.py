@@ -8,12 +8,24 @@ test_query= "Who was accused of the crime?"
 
 @test("check quote class can be created")
 def _():
-    q = Quote(test_text, test_query, 1000)
-    assert q.page_size == 1000
+    q = Quote(test_text, test_query, 10000)
+    assert q.page_size == 10000
+
+@test("test pagination page 0")
+def _():
+    q = Quote(test_text, test_query, 600)
+    res = q.get_paged_text(0)
+    assert res == test_text
+
+@test("test pagination page 1")
+def _():
+    q = Quote(test_text, test_query, 500)
+    res = q.get_paged_text(1)
+    assert res == "rm of human thought and action the rich growth of his barbaric idealism."
 
 @test("test get_supporting_quotes. should return list")
 def _():
-    q = Quote(test_text, test_query, 1000)
+    q = Quote(test_text, test_query, 10000)
     res = q.get_supporting_quotes(prompt=test_prompt)
     print(res)
     assert type(res) == list

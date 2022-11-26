@@ -3,6 +3,7 @@ import sys
 import openai
 import json
 import spacy
+import math
 model = spacy.load("en_core_web_lg")
 
 class Quote:
@@ -14,8 +15,23 @@ class Quote:
         self.text = text
         self.query = query
         self.page_size = page_size
-        self.current_page = 0
-        self.total_pages = max(1, page_size/len(text))
+        self.total_pages = math.ceil(len(text)/page_size)-1
+
+    def get_paged_text(self, page):
+        if page > self.total_pages:
+            sys.exit("page number is higher then total number of pages (" + str(self.total_pages) + ")")
+        # get all characters we will keep
+        keep = self.text[page*self.page_size:((page*self.page_size) + self.page_size)]
+        # loop through each remaining character until we either hit . for sentence end or 300
+        potential_keep = self.text[((page*self.page_size) + self.page_size):]
+        for i in range(0, len(potential_keep)):
+            keep = keep + potential_keep[i]
+            if potential_keep[i] == ".":
+                break
+            if i == 300:
+                break
+        return keep
+
 
     # is the main function for training. Allows for changing prompt and various other inputs to test variables.
     def get_supporting_quotes(self, model: str = "text-davinci-002", page: int = 0, prompt: str = None, temperature: int = 0, max_tokens: int = 100, top_p: float = 1.0, best_of: int = 5, frequency_penalty: float = 0.0, presence_penalty: float = 2.0) -> list:
@@ -27,7 +43,7 @@ class Quote:
         # run it through gpt-3
         resRaw = openai.Completion.create(
             model=model,
-            prompt=detailed_prompt+prompt + "\n\n" + self.text + "\n\nQuery" + ": " + self.query,
+            prompt=detailed_prompt+prompt + "\n\n" + self.get_paged_text(page) + "\n\nQuery" + ": " + self.query,
             temperature=temperature,
             max_tokens=max_tokens,
             top_p=top_p,
@@ -41,7 +57,6 @@ class Quote:
         if res == "":
             sys.exit("GPT-3 response is empty")
         else:
-            print(res)
             # backout of the quote format to get the raw quote text
             res_split = res.split("\nQuote: ")
             # check to ensure that the split happened correctly to avoid panic
