@@ -6,7 +6,7 @@ Repository for utilizing GPT-3 to get quote semantics based on queries.
 ```bash
 pip3 install -r requirements.txt
 
-python -m spacy download en_core_web_lg
+python3 -m spacy download en_core_web_lg
 ```
 
 ## Setup
