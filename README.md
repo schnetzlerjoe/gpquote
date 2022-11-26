@@ -2,6 +2,8 @@
 
 Repository for utilizing GPT-3 to get quote semantics based on queries.
 
+You will need Python 3.9+ installed.
+
 ## Install
 ```bash
 pip3 install -r requirements.txt
