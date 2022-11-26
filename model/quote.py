@@ -16,20 +16,20 @@ class Quote:
         self.total_pages = max(1, page_size/len(text))
 
     # is the main function for training. Allows for changing the class prompt to play around with different prompts.
-    def get_supporting_quotes(self, page: int = 0, prompt: str = None) -> list:
+    def get_supporting_quotes(self, model: str = "text-davinci-002", page: int = 0, prompt: str = None, temperature: int = 0, max_tokens: int = 100, top_p: float = 1.0, best_of: int = 1, frequency_penalty: float = 0.0, presence_penalty: float = 2.0) -> list:
         # make sure prompt is not empty
         if prompt == None:
             sys.exit("empty prompt")
         # run it through gpt-3
         resRaw = openai.Completion.create(
-            model="text-davinci-002",
+            model=model,
             prompt=prompt + "\n\n" + self.text + "\n\nQuery" + ": " + self.query,
-            temperature=0,
-            max_tokens=100,
-            top_p=1.0,
-            best_of=1,
-            frequency_penalty=0.0,
-            presence_penalty=2.0
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            best_of=best_of,
+            frequency_penalty=frequency_penalty,
+            presence_penalty=presence_penalty
         )
 
         res: str = resRaw['choices'][0]['text']
@@ -72,5 +72,5 @@ def get_metrics(file_path: str) -> None:
 
     # iterate over prompts
     for p in prompts:
-        res = q.get_supporting_quotes(prompt=p)
+        res = q.get_supporting_quotes(model=data["model"], prompt=p, temperature=data["temperature"], max_tokens=data["max_tokens"], top_p=data["top_p"], best_of=data["best_of"], frequency_penalty=data["frequency_penalty"], presence_penalty=data["presence_penalty"])
         print(res, "\n")
