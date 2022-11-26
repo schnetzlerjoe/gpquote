@@ -60,7 +60,7 @@ class Quote:
 
 # takes in a file that has a list of prompts and runs through each prompt testing them against
 # class set text and query. Returns verify quote for each prompt.
-def get_metrics(file_path: str) -> None:
+def get_metrics(file_path: str) -> list:
     # reads a json file with test format
     file = open(file_path)
     # convert to json dict
