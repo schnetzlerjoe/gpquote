@@ -26,6 +26,8 @@ python3 main.py
 ```
 
 ## Auto Train Config
+See ---> [Example File](https://raw.githubusercontent.com/schnetzlerjoe/gpquote/master/tests/test.json?token=GHSAT0AAAAAAB3U5WMWLLZW2NJGIS6SRI7KY4B2PWA)
+
 Auto Training takes in various promps (and configuration settings) from a JSON file and then tests against the text and query wanted. The `<file_name>.json` format is:
 
 ```json
