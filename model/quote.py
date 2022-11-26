@@ -69,8 +69,12 @@ def get_metrics(file_path: str) -> None:
     prompts = data["prompts"]
     # init class
     q = Quote(data["text"], data["query"], 1000)
+    res_list = []
 
     # iterate over prompts
     for p in prompts:
         res = q.get_supporting_quotes(model=data["model"], prompt=p, temperature=data["temperature"], max_tokens=data["max_tokens"], top_p=data["top_p"], best_of=data["best_of"], frequency_penalty=data["frequency_penalty"], presence_penalty=data["presence_penalty"])
-        print(res, "\n")
+        if res != None:
+            res_list.append(res)
+
+    return res_list
