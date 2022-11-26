@@ -2,6 +2,8 @@ import os
 import sys
 import openai
 import json
+import spacy
+model = spacy.load("en_core_web_lg")
 
 class Quote:
     # set api key from system variable
@@ -16,14 +18,16 @@ class Quote:
         self.total_pages = max(1, page_size/len(text))
 
     # is the main function for training. Allows for changing the class prompt to play around with different prompts.
-    def get_supporting_quotes(self, model: str = "text-davinci-002", page: int = 0, prompt: str = None, temperature: int = 0, max_tokens: int = 100, top_p: float = 1.0, best_of: int = 1, frequency_penalty: float = 0.0, presence_penalty: float = 2.0) -> list:
+    def get_supporting_quotes(self, model: str = "text-davinci-002", page: int = 0, prompt: str = None, temperature: int = 0, max_tokens: int = 100, top_p: float = 1.0, best_of: int = 5, frequency_penalty: float = 0.0, presence_penalty: float = 2.0) -> list:
         # make sure prompt is not empty
         if prompt == None:
             sys.exit("empty prompt")
+        # give GPT-3 some initial context to work with
+        detailed_prompt = "Return a quote from the stories that pertain to the questions asked:\n\n"
         # run it through gpt-3
         resRaw = openai.Completion.create(
             model=model,
-            prompt=prompt + "\n\n" + self.text + "\n\nQuery" + ": " + self.query,
+            prompt=detailed_prompt+prompt + "\n\n" + self.text + "\n\nQuery" + ": " + self.query,
             temperature=temperature,
             max_tokens=max_tokens,
             top_p=top_p,
@@ -37,8 +41,14 @@ class Quote:
         if res == "":
             sys.exit("GPT-3 response is empty")
         else:
+            print(res)
             # backout of the quote format to get the raw quote text
-            res = res.split("\nQuote: ")[1]
+            res_split = res.split("\nQuote: ")
+            # check to ensure that the split happened correctly to avoid panic
+            if len(res_split) > 0:
+                res = res_split[1]
+            else:
+                res = res_split[0]
             # get rid of any extra space or further generation beyond query
             res = res.split("\n")[0]
 
@@ -69,12 +79,17 @@ def get_metrics(file_path: str) -> list:
     prompts = data["prompts"]
     # init class
     q = Quote(data["text"], data["query"], 1000)
+    # construct sentence vector for comparison later
+    quote_doc = model(data["quote"])
     res_list = []
 
     # iterate over prompts
-    for p in prompts:
-        res = q.get_supporting_quotes(model=data["model"], prompt=p, temperature=data["temperature"], max_tokens=data["max_tokens"], top_p=data["top_p"], best_of=data["best_of"], frequency_penalty=data["frequency_penalty"], presence_penalty=data["presence_penalty"])
-        if res != None:
-            res_list.append(res)
+    for i in range(0, len(prompts)):
+        res = q.get_supporting_quotes(model=data["model"], prompt=prompts[i], temperature=data["temperature"], max_tokens=data["max_tokens"], top_p=data["top_p"], best_of=data["best_of"], frequency_penalty=data["frequency_penalty"], presence_penalty=data["presence_penalty"])
+        res_doc = model(res[0])
+        res_list.append({
+            "prompt_index": i,
+            "similarity": quote_doc.similarity(res_doc)
+        })
 
     return res_list
