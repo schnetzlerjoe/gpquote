@@ -17,7 +17,7 @@ class Quote:
         self.current_page = 0
         self.total_pages = max(1, page_size/len(text))
 
-    # is the main function for training. Allows for changing the class prompt to play around with different prompts.
+    # is the main function for training. Allows for changing prompt and various other inputs to test variables.
     def get_supporting_quotes(self, model: str = "text-davinci-002", page: int = 0, prompt: str = None, temperature: int = 0, max_tokens: int = 100, top_p: float = 1.0, best_of: int = 5, frequency_penalty: float = 0.0, presence_penalty: float = 2.0) -> list:
         # make sure prompt is not empty
         if prompt == None:
@@ -69,7 +69,8 @@ class Quote:
             return None
 
 # takes in a file that has a list of prompts and runs through each prompt testing them against
-# class set text and query. Returns verify quote for each prompt.
+# class set text and query. Returns similarity to provided real quote for each prompt.
+#NOTE: maybe add all inputs as a list to allow different tests?
 def get_metrics(file_path: str) -> list:
     # reads a json file with test format
     file = open(file_path)
